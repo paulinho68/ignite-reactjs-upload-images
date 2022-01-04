@@ -17,25 +17,26 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
   const [localImageUrl, setLocalImageUrl] = useState('');
   const toast = useToast();
 
+  const validateImage = (value: FileList) => {
+    const tenMB = 10485760;
+    if (value.length > 0) {
+      console.log(value[0]);
+      if (value[0].size > tenMB) {
+        return "O arquivo deve ser menor que 10MB";
+      }
+      const type = value[0].type.toLowerCase();
+      const regex = /png|jpe?g|gif/;
+      if (!regex.test(type)) {
+        return "Somente são aceitos arquivos PNG, JPEG e GIF";
+      }
+    }
+    return true;
+  }
+
   const formValidations = {
     image: {
       required: "Arquivo obrigatório",
-      validate: (value: FileList) => {
-        const tenMB = 10485760;
-        if (value.length > 0) {
-          if (value[0].size > tenMB) {
-            return "O arquivo deve ser menor que 10MB";
-          }
-          const type = value[0].type.toLowerCase();
-          const regex = /\.(gif|jpe?g|png)$/i;
-          console.log(type.toLowerCase().match(regex));
-          console.log(value[0]);
-          if (!type.toLowerCase().match(regex)) {
-            return "Somente são aceitos arquivos PNG, JPEG e GIF";
-          }
-        }
-        return true;
-      }
+      validate: validateImage
     },
     title: {
       required: "Título obrigatório",
