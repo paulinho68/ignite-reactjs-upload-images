@@ -84,7 +84,6 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
           title: `Imagem não adicionada`,
           description: 'É preciso adicionar e aguardar o upload de uma imagem antes de realizar o cadastro.',
           status: 'error',
-          isClosable: true,
         });
         return;
       }
@@ -95,7 +94,6 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
           title: `Imagem cadastrada`,
           description: 'Sua imagem foi cadastrada com sucesso.',
           status: 'success',
-          isClosable: true,
         });
         return;
       }
@@ -105,12 +103,11 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
         title: `Falha no cadastro`,
         description: 'Ocorreu um erro ao tentar cadastrar a sua imagem.',
         status: 'error',
-        isClosable: true,
       });
     } finally {
+      reset();
       setImageUrl('');
       setLocalImageUrl('');
-      reset();
       closeModal();
     }
   };

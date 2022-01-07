@@ -8,16 +8,28 @@ import { api } from '../services/api';
 import { Loading } from '../components/Loading';
 import { Error } from '../components/Error';
 
+interface Image {
+  url: string;
+  title: string;
+  description: string;
+  ts: number;
+  id: string;
+}
+interface GetImagesResponse {
+  after: string;
+  data: Image[];
+}
+
 export default function Home(): JSX.Element {
 
-  const fetchPage = async (pageParam: number = null) => {
-    try {
-      const response = await api.get('/api/images');
-      if (response.status === 200) {
-        return response.data;
+  const fetchPage = async ({ pageParam = null }): Promise<GetImagesResponse> => {
+    const response = await api.get('/api/images', {
+      params: {
+        after: pageParam
       }
-    } catch (err) {
-      console.log(err);
+    });
+    if (response.status === 200) {
+      return response.data;
     }
   }
 
@@ -30,33 +42,28 @@ export default function Home(): JSX.Element {
     hasNextPage,
   } = useInfiniteQuery(
     'images',
-    ({ pageParam = 1 }) => fetchPage(pageParam),
+    fetchPage,
     {
-      getNextPageParam: (lastPage, allPages) => {
-        // console.log(lastPage, allPages)
-        if (!lastPage.after) {
-          return undefined;
-        } else {
-          return allPages.slice(0, 8)
-        }
-      }
-      // getPreviousPageParam: (firstPage, allPages) => undefined,
+      getNextPageParam: (lastPage, allPages) => lastPage?.after || null,
     }
   );
 
   const formattedData = useMemo(() => {
-    return data?.pages[0]?.data;
+    const formatted = data?.pages.flatMap(imageData => {
+      return imageData?.data.flat();
+    })
+    return formatted;
   }, [data]);
 
 
-  if (!isLoading) {
-    <Loading />
+
+  if (isLoading && !isError) {
+    return <Loading />
   }
 
-  if (isError) {
-    <Error />
+  if (!isLoading && isError) {
+    return <Error />;
   }
-
 
   return (
     <>
@@ -66,7 +73,9 @@ export default function Home(): JSX.Element {
         <CardList cards={formattedData} />
         {hasNextPage ? (
           <Button
+            marginTop="40px"
             onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
           >
             {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}</Button>
         ) : null}
